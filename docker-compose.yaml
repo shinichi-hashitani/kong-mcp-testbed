@@ -1,0 +1,83 @@
+# Specify which Kong image to run
+x-kong-image:
+  &kong-image
+  image: ${KONG_DOCKER_IMAGE:-kong/kong-gateway-dev:61794508cba9699dea5c433ccc3c43b850e1019a}
+
+# Kong database config
+x-kong-db-config:
+  &kong-db-config
+  KONG_DATABASE: postgres
+  KONG_PG_HOST: kong-db
+  KONG_PG_DATABASE: kong
+  KONG_PG_USER: kong
+  KONG_PG_PASSWORD: kong
+  KONG_PASSWORD: password
+
+networks:
+  kong-net:
+    name: kong-net
+    driver: bridge
+  kong-internal:
+    name: kong-internal
+    driver: bridge
+    internal: true
+
+services:
+  kong-migrations:
+    <<: *kong-image
+    container_name: kong-migrations
+    networks:
+      - kong-internal
+    command: "kong migrations bootstrap"
+    environment:
+      <<: [ *kong-db-config ]
+    depends_on:
+      kong-db:
+        condition: service_healthy
+    restart: on-failure
+
+  kong:
+    <<: [ *kong-image]
+    container_name: kong
+    deploy:
+      replicas: 1
+    mem_limit: 2g
+    cpus: 1
+    networks:
+      - kong-net
+      - kong-internal
+    user: "${KONG_USER:-kong}"
+    ports:
+      - 8000:8000
+      - 8001:8001
+      - 8002:8002
+    depends_on:
+      kong-migrations:
+        condition: service_completed_successfully
+    env_file:
+      - "./.env"
+    environment:
+      <<: [ *kong-db-config ]
+      KONG_PROXY_LISTEN: "0.0.0.0:8000,0.0.0.0:8443 ssl"
+      KONG_ADMIN_LISTEN: "0.0.0.0:8001"
+      KONG_ADMIN_GUI_LISTEN: "0.0.0.0:8002"
+      KONG_LOG_LEVEL: "warn"
+
+  kong-db:
+    networks:
+      - kong-internal
+    image: postgres:17-alpine
+    container_name: postgres
+    environment:
+      POSTGRES_DB: kong
+      POSTGRES_PASSWORD: kong
+      POSTGRES_USER: kong
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "kong" ]
+      interval: 10s
+      timeout: 10s
+      retries: 3
+    restart: on-failure
+    stdin_open: true
+    tty: true
+
