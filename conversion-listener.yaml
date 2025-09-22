@@ -18,6 +18,7 @@ services:
           mode: conversion-listener
           tools:
           - description: Get current weather for a specifried Longitude (lon) and Latitude (lat).
+            method: GET
             query:
               appid:
               - ${{ env "DECK_OPENWEATHER_API_KEY" }}

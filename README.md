@@ -77,10 +77,47 @@ Received POST message for sessionId d537f628-a27a-4aa7-9dac-249ebf7e025b
 Received GET message for sessionId d537f628-a27a-4aa7-9dac-249ebf7e025b
 ```
 
+### MCPにリクエストを送信
+MCP Inspector上でTool Listから```current-weather-by-longitute-and-latitude```を選択。
+
+その後パラメータである```lat```（緯度）と```lon```（経度）を指定してリクエストを実行。
+![MCP Inspector - Run Tool](/resources/mcp-inspector-runtool.png)
+
+###結果
+結果はAPIのレスポンスボディがそのままtext形態で出力される。
+
+Request:
+```json
+{
+  "method": "tools/call",
+  "params": {
+    "name": "current-weather-by-longitude-and-latitude",
+    "arguments": {
+      "query_lat": 35.666,
+      "query_lon": 139.732
+    },
+    "_meta": {
+      "progressToken": 0
+    }
+  }
+}
+```
+
+Response:
+```json
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "{\"coord\":{\"lon\":139.732,\"lat\":35.666},\"weather\":[{\"id\":804,\"main\":\"Clouds\",\"description\":\"overcast clouds\",\"icon\":\"04d\"}],\"base\":\"stations\",\"main\":{\"temp\":25.99,\"feels_like\":25.99,\"temp_min\":25.99,\"temp_max\":25.99,\"pressure\":1019,\"humidity\":38,\"sea_level\":1019,\"grnd_level\":1018},\"visibility\":10000,\"wind\":{\"speed\":6.98,\"deg\":83,\"gust\":6.01},\"clouds\":{\"all\":92},\"dt\":1758521872,\"sys\":{\"country\":\"JP\",\"sunrise\":1758486523,\"sunset\":1758530351},\"timezone\":32400,\"id\":1856950,\"name\":\"Mita\",\"cod\":200}"
+    }
+  ],
+  "isError": false
+}
+```
+
 ### 検証中の課題
 - StreamableHTTPでは接続出来るが、SSEでの接続ではエラーとなる。
-- MCPのToolsリストアップが出来ない。現状プラグインでも設定可能項目が見当たらない。
-![MCP Inspector - List Toolsの実行](/resources/mcp-inspector-tools.png)
 
 ## 関連ドキュメンテーション
 > [!WARNING] 
@@ -88,6 +125,6 @@ Received GET message for sessionId d537f628-a27a-4aa7-9dac-249ebf7e025b
 
 [KongにおけるMCPサーバー機能の概要](https://deploy-preview-2720--kongdeveloper.netlify.app/mcp/)
 
-[AI MCP Proxyプラグイン](https://deploy-preview-2720--kongdeveloper.netlify.app/plugins/ai-mcp-proxy/unreleased/)
+[AI MCP Proxyプラグイン](https://deploy-preview-2720--kongdeveloper.netlify.app/plugins/ai-mcp-proxy/)
 
 [AI MCP OAuthプラグイン](https://deploy-preview-2883--kongdeveloper.netlify.app/plugins/ai-mcp-oauth2/)
