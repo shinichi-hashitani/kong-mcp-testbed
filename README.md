@@ -83,7 +83,7 @@ MCP Inspector上でTool Listから```current-weather-by-longitute-and-latitude``
 その後パラメータである```lat```（緯度）と```lon```（経度）を指定してリクエストを実行。
 ![MCP Inspector - Run Tool](/resources/mcp-inspector-runtool.png)
 
-###結果
+### 結果
 結果はAPIのレスポンスボディがそのままtext形態で出力される。
 
 Request:
