@@ -7,7 +7,7 @@ Kong Gatewayの3.12で登場したMCP Proxy及びAI MCP OAuth2プラグインの
 > Kong Enterpriseのライセンスが必要です。
 
 > [!WARNING] 
-> 現時点ではKong Gateway 3.12がまだリリースされていない為、ナイトリービルドのイメージを利用しています。
+> 現時点ではKong Gateway 3.12がまだリリースされていない為、RC4のイメージを利用しています。
 
 ## ゲートウェイの立ち上げ
 1. Kong Gateway Enterpriseライセンスを`.env`に設定。
@@ -17,7 +17,72 @@ docker compose up -d
 ```
 3. [http://localhost:8002](http://localhost:8002) にアクセス
 
-## ドキュメンテーション
+## MCP Proxy Plugin
+> [!WARNING] 
+> 現在検証中
+
+OpenWeatherMapのAPI用のMCPサーバーをMCP Proxyプラグインを利用して構築するサンプルです。この為、まず[OpenWeatherMapに登録の上、APIキーを発行](https://home.openweathermap.org/api_keys)する必要があります。
+![OpenWeatherMap - APIキー画面](/resources/openweather-ui.png)
+
+### Service/Route/Pluginの設定
+ルーティング定義は[conversion-listener.yaml](/conversion-listener.yaml)に定義。但しOpenWeatherMapのAPIキーは参照変数指定する設定となっている為、decKコマンド実施前に設定。
+```bash
+export DECK_OPENWEATHER_API_KEY=YOUR_API_KEY
+```
+その後decK syncコマンドを実行
+```bash
+deck gateway sync conversion-listener.yaml
+```
+[Kong Manager](http://localhost:8002)にアクセスし、MCP Proxyプラグインが設定されていること、設定内の```query.appid```という項目にOpenWeatherMapのAPIキーが設定されていることを確認。
+![Konnect - MCP Proxyプラグイン設定画面](/resources/konnect-plugin-config.png)
+
+### MCP Inspectorの実行
+ローカル環境にてMCP Inspectorを起動
+```bash
+npx @modelcontextprotocol/inspector
+```
+npxからモジュールダウンロードの確認が出る。yesとするとMCP Inspectorがブラウザで立ち上がる。
+```bash
+npx @modelcontextprotocol/inspector
+Need to install the following packages:
+@modelcontextprotocol/inspector@0.16.8
+Ok to proceed? (y) y
+
+npm warn deprecated node-domexception@1.0.0: Use your platform's native DOMException instead
+Starting MCP inspector...
+⚙️ Proxy server listening on localhost:6277
+🔑 Session token: 42decd48f3f70b635b1560d376029b84dad00778c1753e43a47238427599359e
+   Use this token to authenticate requests or set DANGEROUSLY_OMIT_AUTH=true to disable auth
+
+🚀 MCP Inspector is up and running at:
+   http://localhost:6274/?MCP_PROXY_AUTH_TOKEN=42decd48f3f70b635b1560d376029b84dad00778c1753e43a47238427599359e
+
+🌐 Opening browser...
+```
+
+### MCP Inspectorを利用した接続確認
+MCP Inspector上で以下の設定の上、Connectをクリックして接続。
+- ```Transport Type```に```StreamableHTTP```を設定。
+- ```Authentication```の設定をクリア。
+- URLにMCP Proxyプラグインで指定したURL([http://localhost:8000/weather/mpc](http://localhost:8000/weather/mpc))を設定。
+![MCP Inspector - ログイン後](/resources/mcp-inspector-after-login.png)
+接続Initializeの結果が反映されている事を確認。また、MCP Inspectorのログには以下の様に出力される。
+```bash
+New StreamableHttp connection request
+Query parameters: {"url":"http://localhost:8000/weather/mpc","transportType":"streamable-http"}
+Created StreamableHttp client transport
+Client <-> Proxy  sessionId: d537f628-a27a-4aa7-9dac-249ebf7e025b
+Proxy  <-> Server sessionId: 06178b76-a0a1-49ee-81f3-5f3b00c659e1
+Received POST message for sessionId d537f628-a27a-4aa7-9dac-249ebf7e025b
+Received GET message for sessionId d537f628-a27a-4aa7-9dac-249ebf7e025b
+```
+
+### 検証中の課題
+- StreamableHTTPでは接続出来るが、SSEでの接続ではエラーとなる。
+- MCPのToolsリストアップが出来ない。現状プラグインでも設定可能項目が見当たらない。
+![MCP Inspector - List Toolsの実行](/resources/mcp-inspector-tools.png)
+
+## 関連ドキュメンテーション
 > [!WARNING] 
 > 現時点ではKong Gateway 3.12がまだリリースされていない為、ドキュメントも公開前のバージョンを提示しています。
 
