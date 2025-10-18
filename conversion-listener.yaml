@@ -11,7 +11,7 @@ services:
   routes:
   - name: weather-route
     paths:
-    - /weather/mpc
+    - /weather/mcp
     plugins:
       - name: ai-mcp-proxy
         config:

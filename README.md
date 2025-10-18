@@ -6,9 +6,6 @@ Kong Gatewayの3.12で登場したMCP Proxy及びAI MCP OAuth2プラグインの
 > [!IMPORTANT] 
 > Kong Enterpriseのライセンスが必要です。
 
-> [!WARNING] 
-> 現時点ではKong Gateway 3.12がまだリリースされていない為、RC4のイメージを利用しています。
-
 ## ゲートウェイの立ち上げ
 1. Kong Gateway Enterpriseライセンスを`.env`に設定。
 2. 以下のコマンドを実行
@@ -63,13 +60,13 @@ Starting MCP inspector...
 ### MCP Inspectorを利用した接続確認
 MCP Inspector上で以下の設定の上、Connectをクリックして接続。
 - ```Transport Type```に```StreamableHTTP```を設定。
-- ```Authentication```の設定をクリア。
-- URLにMCP Proxyプラグインで指定したURL([http://localhost:8000/weather/mpc](http://localhost:8000/weather/mpc))を設定。
+- ```Connection Type```に```Via Proxy```を設定。
+- URLにMCP Proxyプラグインで指定したURL([http://localhost:8000/weather/mcp](http://localhost:8000/weather/mcp))を設定。
 ![MCP Inspector - ログイン後](/resources/mcp-inspector-after-login.png)
 接続Initializeの結果が反映されている事を確認。また、MCP Inspectorのログには以下の様に出力される。
 ```bash
 New StreamableHttp connection request
-Query parameters: {"url":"http://localhost:8000/weather/mpc","transportType":"streamable-http"}
+Query parameters: {"url":"http://localhost:8000/weather/mcp","transportType":"streamable-http"}
 Created StreamableHttp client transport
 Client <-> Proxy  sessionId: d537f628-a27a-4aa7-9dac-249ebf7e025b
 Proxy  <-> Server sessionId: 06178b76-a0a1-49ee-81f3-5f3b00c659e1
@@ -120,11 +117,10 @@ Response:
 - StreamableHTTPでは接続出来るが、SSEでの接続ではエラーとなる。
 
 ## 関連ドキュメンテーション
-> [!WARNING] 
-> 現時点ではKong Gateway 3.12がまだリリースされていない為、ドキュメントも公開前のバージョンを提示しています。
+[KongにおけるMCPサーバー機能の概要](https://developer.konghq.com/mcp/)
 
-[KongにおけるMCPサーバー機能の概要](https://deploy-preview-2720--kongdeveloper.netlify.app/mcp/)
+[サンプルチュートリアル](https://developer.konghq.com/mcp/kong-mcp/get-started/)
 
-[AI MCP Proxyプラグイン](https://deploy-preview-2720--kongdeveloper.netlify.app/plugins/ai-mcp-proxy/)
+[AI MCP Proxyプラグイン](https://developer.konghq.com/plugins/ai-mcp-proxy/)
 
-[AI MCP OAuthプラグイン](https://deploy-preview-2883--kongdeveloper.netlify.app/plugins/ai-mcp-oauth2/)
+[AI MCP OAuthプラグイン (Tech Preview)](https://developer.konghq.com/plugins/ai-mcp-oauth2/)

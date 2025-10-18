@@ -1,7 +1,7 @@
 # Specify which Kong image to run
 x-kong-image:
   &kong-image
-  image: ${KONG_DOCKER_IMAGE:-kong/kong-gateway-dev:3.12.0.0-rc.4}
+  image: ${KONG_DOCKER_IMAGE:-kong/kong-gateway:3.12}
 
 # Kong database config
 x-kong-db-config:
