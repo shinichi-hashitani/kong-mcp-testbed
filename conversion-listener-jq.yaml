@@ -1,0 +1,50 @@
+_format_version: "3.0"
+plugins:
+- config:
+    path: /dev/stdout
+    reopen: false
+  enabled: true
+  name: file-log
+services:
+- name: weather-service
+  url: https://api.openweathermap.org/data/2.5/weather
+  routes:
+  - name: weather-route
+    paths:
+    - /weather/mcp
+    plugins:
+      - name: ai-mcp-proxy
+        config:
+          mode: conversion-listener
+          tools:
+          - description: Get current weather for a specifried Longitude (lon) and Latitude (lat).
+            method: GET
+            query:
+              appid:
+              - ${{ env "DECK_OPENWEATHER_API_KEY" }}
+              units:
+              - metric
+            parameters:
+            - name: lon
+              in: query
+              description: Longitude of the location
+              required: true
+              schema:
+                type: number
+            - name: lat
+              in: query
+              description: Latitude of the location
+              required: true
+              schema:
+                type: number
+            annotations:
+              title: Current weather by Longitude and Latitude
+          server:
+            timeout: 60000
+          logging:
+            log_statistics: true
+            log_payloads: true
+          max_request_body_size: 8192
+      - name: jq
+        config:
+          response_jq_program: '{"観測所": "\(.name)", "気温": "\(.main.temp)度", "湿度": "\(.main.humidity)%"}'

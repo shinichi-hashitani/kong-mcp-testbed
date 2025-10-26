@@ -15,9 +15,6 @@ docker compose up -d
 3. [http://localhost:8002](http://localhost:8002) にアクセス
 
 ## MCP Proxy Plugin
-> [!WARNING] 
-> 現在検証中
-
 OpenWeatherMapのAPI用のMCPサーバーをMCP Proxyプラグインを利用して構築するサンプルです。この為、まず[OpenWeatherMapに登録の上、APIキーを発行](https://home.openweathermap.org/api_keys)する必要があります。
 ![OpenWeatherMap - APIキー画面](/resources/openweather-ui.png)
 
@@ -112,9 +109,29 @@ Response:
   "isError": false
 }
 ```
+![レスポンスJSON](/resources/mcp-inspector-result.png)
 
 ### 検証中の課題
 - StreamableHTTPでは接続出来るが、SSEでの接続ではエラーとなる。
+
+## レスポンスフォーマットの変換
+レスポンスJSONオブジェクトの変換にはいくつかアプローチがあるが、今回はKongが提供する[jqプラグイン](https://developer.konghq.com/plugins/jq/examples/jq-request-program/)を利用する。このプラグインはリクエスト、もしくはレスポンスのペイロードJSONに対してjqコマンドを適用することができる。
+
+今回は[response_jq_program](https://developer.konghq.com/plugins/jq/reference/#schema--config-response-jq-program)を指定して、ペイロードから必要な属性のみ抽出する。jqプラグインの定義は以下のとおり：
+```bash
+- name: jq
+  config:
+    response_jq_program: '{"観測所": "\(.name)", "気温": "\(.main.temp)度", "湿度": "\(.main.humidity)%"}'
+
+```
+
+### Kong Gatewayにプラグインを適用
+jqプラグインによる変換を含んだ[conversion-listener-jq.yaml](/conversion-listener-jq.yaml)を適用。
+```bash
+deck gateway sync conversion-listener-jq.yaml
+```
+結果は以下のとおり：
+![MCP Inspector - jqプラグインによる変換の結果](/resources/mcp-inspector-result-jq.png)
 
 ## 関連ドキュメンテーション
 [KongにおけるMCPサーバー機能の概要](https://developer.konghq.com/mcp/)
