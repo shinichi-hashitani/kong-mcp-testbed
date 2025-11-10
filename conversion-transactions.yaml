@@ -1,0 +1,33 @@
+_format_version: "3.0"
+services:
+- name: accounts
+  protocol: http
+  host: accounts-service
+  port: 8081
+  path: /accounts
+  routes:
+  - name: accounts
+    paths:
+    - /accounts
+- name: transactions
+  protocol: http
+  host: transactions-service
+  port: 8082
+  routes:
+  - name: transactions
+    paths:
+    - "~/transactions/(?<account_id>\\S+)$"
+    plugins:
+    - name: request-transformer-advanced
+      config:
+        replace:
+          uri: "/accounts/$(uri_captures['account_id'])/transactions"
+routes:
+- name: accounts-mcp
+  paths:
+  - /accounts/mcp
+plugins:
+- name: file-log
+  config:
+    path: /dev/stdout
+    reopen: false

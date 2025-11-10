@@ -1,0 +1,230 @@
+type: collection.insomnia.rest/5.0
+name: MCP Testbed
+meta:
+  id: wrk_0393c68b1dec4c5b86c373bc26968d96
+  created: 1761449591773
+  modified: 1761449591773
+  description: ""
+collection:
+  - url: https://api.openweathermap.org/data/2.5/weather
+    name: WeatherMap
+    meta:
+      id: req_e47068c4977542bc945d570ed571b5fe
+      created: 1761449597435
+      modified: 1762317185612
+      isPrivate: false
+      description: ""
+      sortKey: -1762317075652
+    method: GET
+    parameters:
+      - id: pair_cde095e1447b486ab0e7131282e31789
+        name: appid
+        value: 
+        description: ""
+        disabled: false
+      - id: pair_ee7a4431e6604ddf9e3947ea4a133edc
+        name: lat
+        value: "35.666"
+        description: ""
+        disabled: false
+      - id: pair_bfe0d291f8544b1da006cd6c800ec5fe
+        name: lon
+        value: "139.732"
+        description: ""
+        disabled: false
+      - id: pair_9a93f70cea9846198c9f8b205d185e52
+        name: units
+        value: metric
+        description: ""
+        disabled: false
+    headers:
+      - name: User-Agent
+        value: insomnia/11.6.2
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: http://localhost:8000/accounts
+    name: Accounts - List
+    meta:
+      id: req_a4ed65e25ea547c6a810fe6a54395eb5
+      created: 1762317016231
+      modified: 1762663497780
+      isPrivate: false
+      description: ""
+      sortKey: -1762317016231
+    method: GET
+    headers:
+      - name: User-Agent
+        value: insomnia/12.0.0
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: http://localhost:8000/accounts
+    name: Accounts - Create
+    meta:
+      id: req_a9c6ade3756e4b15b177ac7a266879cb
+      created: 1762317075552
+      modified: 1762663515146
+      isPrivate: false
+      description: ""
+      sortKey: -1762317075552
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        {
+          "type": "savings",
+          "initial_balance": 1000
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+      - name: User-Agent
+        value: insomnia/12.0.0
+    scripts:
+      afterResponse: |-
+        let data = insomnia.response.json();
+        insomnia.environment.set("accountId", data.account_id);
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: http://localhost:8000/accounts/{{ _.accountId }}/credit
+    name: Accounts - Credit
+    meta:
+      id: req_18ca0b6a369d4e478d7985b23ffb62ae
+      created: 1762317199603
+      modified: 1762663529944
+      isPrivate: false
+      description: ""
+      sortKey: -1762317016131
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        {
+          "amount": 100
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+      - name: User-Agent
+        value: insomnia/12.0.0
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: http://localhost:8000/accounts/{{ _.accountId }}/debit
+    name: Accounts - Debit
+    meta:
+      id: req_f85423013de843cca33610be14cbd9b1
+      created: 1762317483885
+      modified: 1762663539353
+      isPrivate: false
+      description: ""
+      sortKey: -1762020153182
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        {
+          "amount": 100
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+      - name: User-Agent
+        value: insomnia/12.0.0
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: http://localhost:8000/transactions/{{ _.accountId }}
+    name: Transactions - List
+    meta:
+      id: req_185c2960c6e04bf382a4eb19940d5a49
+      created: 1762317675507
+      modified: 1762666391711
+      isPrivate: false
+      description: ""
+      sortKey: -1762020153082
+    method: GET
+    headers:
+      - name: User-Agent
+        value: insomnia/12.0.0
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: http://localhost:8000/transactions/{{ _.accountId }}
+    name: Transactions - Credit
+    meta:
+      id: req_c4fbf84f47764a6593350a3dfdfdc671
+      created: 1762317805128
+      modified: 1762666386688
+      isPrivate: false
+      description: ""
+      sortKey: -1762020153132
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        {
+          "amount": 5000.00,
+          "description": "Salary Payment",
+          "transaction_type": "credit"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+      - name: User-Agent
+        value: insomnia/12.0.0
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+cookieJar:
+  name: Default Jar
+  meta:
+    id: jar_9972e949ba8eb208f9467b72199c8209fd1acf46
+    created: 1761449591775
+    modified: 1762743324043
+environments:
+  name: Base Environment
+  meta:
+    id: env_9972e949ba8eb208f9467b72199c8209fd1acf46
+    created: 1761449591774
+    modified: 1762746559198
+    isPrivate: false
+  data:
+    accountId: ""

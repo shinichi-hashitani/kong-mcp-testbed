@@ -1,0 +1,125 @@
+_format_version: "3.0"
+services:
+- name: accounts
+  protocol: http
+  host: accounts-service
+  port: 8081
+  path: /accounts
+  routes:
+  - name: accounts
+    paths:
+    - /accounts
+- name: transactions
+  protocol: http
+  host: transactions-service
+  port: 8082
+  routes:
+  - name: transactions
+    paths:
+    - "~/transactions/(?<account_id>\\S+)$"
+    plugins:
+    - name: request-transformer-advanced
+      config:
+        replace:
+          uri: "/accounts/$(uri_captures['account_id'])/transactions"
+routes:
+- name: accounts-mcp
+  paths:
+  - /accounts/mcp
+plugins:
+- name: file-log
+  config:
+    path: /dev/stdout
+    reopen: false
+- name: ai-mcp-proxy
+  route: accounts-mcp
+  config:
+    mode: listener
+    server:
+      tag: accounts-mcp
+    logging:
+      log_payloads: false
+      log_statistics: true
+- name: ai-mcp-proxy
+  tags:
+  - accounts-mcp
+  route: accounts
+  config:
+    mode: conversion-only
+    tools:
+    - annotations:
+        title: Create an account
+      description: Create an account with specified initial values.
+      method: POST
+      request_body:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  description: Type of the account. It could be either savings or checking.
+                  type: string
+                  enum:
+                  - savings
+                  - checking
+                initial_balance: 
+                  description: Initial amount in US dollars. Only the natural number is allowed.
+                  type: integer
+                  format: int64
+              required: [type, initial_balance]
+    - annotations:
+        title: List all accounts
+      description: Get a list of accounts with id, account type, and balance.
+      method: GET
+- name: ai-mcp-proxy
+  route: transactions
+  tags:
+  - accounts-mcp
+  config:
+    mode: conversion-only
+    tools:
+    - annotations:
+        title: Create a transaction
+      description: Create a new credit transaction for a given Account ID.
+      method: POST
+      path: /transactions/{accountId}
+      parameters:
+      - name: accountId
+        in: path
+        description: Account ID for the transactions.
+        schema:
+          type: string
+        required: [accountId]
+      request_body:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount:
+                  description: The amount to be credited.
+                  type: integer
+                  format: int64
+                description:
+                  description: Description of this credit transaction.
+                  type: string
+                transaction_type:
+                  description: Type of the transaction. It could be either credit or debit.
+                  type: string
+                  enum:
+                  - credit
+                  - debit
+              required: [amount, description, transaction_type]
+    - annotations:
+        title: List all transactions
+      description: Get a list of transaction with id, date, amount, description, and transaction type for a given account.
+      method: GET
+      path: /transactions/{accountId}
+      parameters:
+      - name: accountId
+        in: path
+        description: Account ID for the transactions.
+        schema:
+          type: string
+        required: [accountId]

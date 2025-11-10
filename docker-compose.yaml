@@ -80,3 +80,28 @@ services:
     restart: on-failure
     stdin_open: true
     tty: true
+
+  accounts-service:
+    networks:
+      - kong-net
+      - kong-internal
+    image: kongcx/accounts-service:1.0.1
+    container_name: accounts
+    ports:
+      - "8081:8081"
+    restart: unless-stopped
+    environment:
+      - LOG_LEVEL=info
+
+  transactions-service:
+    networks:
+      - kong-net
+      - kong-internal
+    image: kongcx/transactions-service:1.0.1
+    container_name: transactions
+    ports:
+      - "8082:8082"
+    restart: unless-stopped
+    environment:
+      - ACCOUNTS_SERVICE_URL=http://accounts-service:8081
+      - LOG_LEVEL=info
