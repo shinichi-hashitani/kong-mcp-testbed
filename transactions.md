@@ -67,7 +67,6 @@ ToolとしてMCPに提供されるものはそれぞれのプラグイン(```ai-
         title: Create a transaction
       description: Create a new credit transaction for a given Account ID.
       method: POST
-      path: /accounts/{accountId}/transactions
 ...
     - annotations:
         title: List all transactions
