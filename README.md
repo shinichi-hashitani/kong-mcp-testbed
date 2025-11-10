@@ -14,7 +14,12 @@ docker compose up -d
 ```
 3. [http://localhost:8002](http://localhost:8002) にアクセス
 
+## サンプル環境
+1. [OpenWeather](/weather.md) - ```conversion-listener```モードで既存のREST APIに対してMCPサーバを用意。
+2. [Transactions](/transactions.md) - ```listener```と```conversion-only```モードを組み合わせる事により、異なる2つのサービスへのアクセスを集約したMCPサーバを構築。
 
+## アクセス (insomnia)
+バックエンドとなるOpenWeather、Account、Transactionの各種サービスに接続する際に利用できる[Insomnia Collection](/collections/kong-mcp-testbed-collection.yaml)を用意。InsomniaからImportすることが可能。
 
 ## 関連ドキュメンテーション
 [KongにおけるMCPサーバー機能の概要](https://developer.konghq.com/mcp/)
