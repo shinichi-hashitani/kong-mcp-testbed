@@ -15,29 +15,28 @@
 
 この構成では、Kong標準の`acl`プラグインを`conversion-only`ルートに付けても効かない（`listener`が内部でツール呼び出しを振り分ける際、`conversion-only`ルート側の通常のプラグインチェーンは再実行されないため）。代わりに`ai-mcp-proxy`プラグイン自身が持つネイティブACL機能を利用する。認証には`ai-mcp-oauth2`プラグイン（MCP用OAuth2保護リソース機能、Tech Preview）を`listener`ルートに追加し、Auth0を発行者とするアクセストークンを検証する。
 
-```
-                      [ブラウザでAuth0にログイン (authorization_code + PKCE)]
-                                      │
-                                      ▼
-[MCPクライアント] --StreamableHTTP--> [Kong Gateway]
-                                      │
-                          route: accounts-mcp (/accounts/mcp)
-                          ├─ ai-mcp-oauth2
-                          │    resource: http://localhost:8000/accounts/mcp
-                          │    authorization_servers: [Auth0 issuer]
-                          └─ ai-mcp-proxy (mode: listener)
-                               acl_attribute_type: oauth_access_token
-                               access_token_claim_field: '.["https://kong-mcp-testbed.example/department"]'
-                                      │
-                     ┌────────────────┴────────────────┐
-                     ▼                                  ▼
-         route: accounts (conversion-only)   route: transactions (conversion-only)
-         ai-mcp-proxy                        ai-mcp-proxy
-           tools[].acl:                        tools[].acl:
-             allow: [finance, marketing]          allow: [finance]
-                     │                                  │
-                     ▼                                  ▼
-            accounts-service(8081)             transactions-service(8082)
+```mermaid
+flowchart TB
+    User["ユーザー（ブラウザ）"]
+    Auth0["Auth0<br/>authorization_code + PKCE<br/>post-login Action で department を<br/>カスタムクレームとしてトークンに注入"]
+    Client["MCPクライアント"]
+
+    subgraph Kong["Kong Gateway"]
+        Listener["route: accounts-mcp　/accounts/mcp<br/>━━━━━━━━━━<br/>ai-mcp-oauth2<br/>resource / authorization_servers<br/>━━━━━━━━━━<br/>ai-mcp-proxy　mode: listener<br/>acl_attribute_type: oauth_access_token<br/>access_token_claim_field: department"]
+        ConvAcc["route: accounts　conversion-only<br/>ai-mcp-proxy<br/>tools.acl allow: finance, marketing"]
+        ConvTx["route: transactions　conversion-only<br/>ai-mcp-proxy<br/>tools.acl allow: finance"]
+    end
+
+    AccSvc["accounts-service<br/>:8081"]
+    TxSvc["transactions-service<br/>:8082"]
+
+    User -->|"① ログイン"| Auth0
+    Auth0 -->|"② アクセストークン<br/>department クレーム付き"| Client
+    Client -->|"③ StreamableHTTP<br/>Authorization: Bearer"| Listener
+    Listener -->|"④ ACL評価の上<br/>ツール呼び出しを振り分け"| ConvAcc
+    Listener --> ConvTx
+    ConvAcc --> AccSvc
+    ConvTx --> TxSvc
 ```
 
 | department | Account Tool | Transaction Tool |
