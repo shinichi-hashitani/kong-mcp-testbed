@@ -4,11 +4,12 @@ services:
   protocol: http
   host: accounts-service
   port: 8081
-  path: /accounts
   routes:
   - name: accounts
     paths:
     - /accounts
+    protocols:
+    - http
 - name: transactions
   protocol: http
   host: transactions-service
@@ -17,11 +18,22 @@ services:
   - name: transactions
     paths:
     - "~/transactions/(?<account_id>\\S+)$"
+    protocols:
+    - http
     plugins:
     - name: request-transformer-advanced
       config:
         replace:
           uri: "/accounts/$(uri_captures['account_id'])/transactions"
+- name: echo
+  protocol: http
+  host: echo
+  path: /anything
+  routes:
+  - name: echo
+    paths:
+    - /echo
+
 routes:
 - name: accounts-mcp
   paths:

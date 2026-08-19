@@ -7,6 +7,8 @@ services:
   path: /accounts
   routes:
   - name: accounts
+    protocols:
+    - http
     paths:
     - /accounts
 - name: transactions
@@ -15,6 +17,8 @@ services:
   port: 8082
   routes:
   - name: transactions
+    protocols:
+    - http
     paths:
     - "~/transactions/(?<account_id>\\S+)$"
     plugins:
@@ -24,6 +28,8 @@ services:
           uri: "/accounts/$(uri_captures['account_id'])/transactions"
 routes:
 - name: accounts-mcp
+  protocols:
+  - http
   paths:
   - /accounts/mcp
 plugins:
