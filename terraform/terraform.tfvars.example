@@ -1,0 +1,11 @@
+# このファイルを terraform.tfvars にコピーして値を設定する。
+# terraform.tfvars は .gitignore 済みなので秘匿情報をコミットしてしまう心配はない。
+
+auth0_domain                  = "dev-xxxxxxx.us.auth0.com"
+auth0_terraform_client_id     = "REPLACE_WITH_M2M_CLIENT_ID"
+auth0_terraform_client_secret = "REPLACE_WITH_M2M_CLIENT_SECRET"
+test_user_password            = "REPLACE_WITH_STRONG_PASSWORD"
+
+# 以下はデフォルト値のままで問題なければ省略可
+# mcp_resource_identifier = "http://localhost:8000/accounts/mcp"
+# custom_claim_namespace  = "https://kong-mcp-testbed.example/department"

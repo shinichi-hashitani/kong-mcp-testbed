@@ -2,4 +2,10 @@
 .DS_Store
 .AppleDouble
 .LSOverride
-.env.prod
+.env
+
+# Terraform
+terraform/.terraform/
+terraform/*.tfstate
+terraform/*.tfstate.*
+terraform/terraform.tfvars

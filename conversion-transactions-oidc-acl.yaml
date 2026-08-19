@@ -1,0 +1,159 @@
+_format_version: "3.0"
+services:
+- name: accounts
+  protocol: http
+  host: accounts-service
+  port: 8081
+  path: /accounts
+  routes:
+  - name: accounts
+    protocols:
+    - http
+    paths:
+    - /accounts
+- name: transactions
+  protocol: http
+  host: transactions-service
+  port: 8082
+  routes:
+  - name: transactions
+    protocols:
+    - http
+    paths:
+    - "~/transactions/(?<account_id>\\S+)$"
+    plugins:
+    - name: request-transformer-advanced
+      config:
+        replace:
+          uri: "/accounts/$(uri_captures['account_id'])/transactions"
+routes:
+- name: accounts-mcp
+  protocols:
+  - http
+  paths:
+  - /accounts/mcp
+plugins:
+- name: file-log
+  config:
+    path: /dev/stdout
+    reopen: false
+- name: ai-mcp-oauth2
+  route: accounts-mcp
+  config:
+    resource: http://localhost:8000/accounts/mcp
+    authorization_servers:
+    - "${{ env "DECK_AUTH0_ISSUER" }}"
+- name: ai-mcp-proxy
+  route: accounts-mcp
+  config:
+    mode: listener
+    server:
+      tag: accounts-mcp
+    logging:
+      log_payloads: false
+      log_statistics: true
+      log_audits: true
+    # department属性(Auth0のカスタムクレーム)をACL判定の主体として使う
+    acl_attribute_type: oauth_access_token
+    access_token_claim_field: '.["https://kong-mcp-testbed.example/department"]'
+- name: ai-mcp-proxy
+  tags:
+  - accounts-mcp
+  route: accounts
+  config:
+    mode: conversion-only
+    # Accountサービスは finance / marketing どちらの部署からもアクセス可能。
+    # listener経由のツール呼び出しでは conversion-only 側の default_acl は参照されないため、
+    # ツール個別の acl として定義する必要がある。
+    tools:
+    - acl:
+        allow:
+        - finance
+        - marketing
+      annotations:
+        title: Create an account
+      description: Create an account with specified initial values.
+      method: POST
+      request_body:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  description: Type of the account. It could be either savings or checking.
+                  type: string
+                  enum:
+                  - savings
+                  - checking
+                initial_balance:
+                  description: Initial amount in US dollars. Only the natural number is allowed.
+                  type: integer
+                  format: int64
+              required: [type, initial_balance]
+    - acl:
+        allow:
+        - finance
+        - marketing
+      annotations:
+        title: List all accounts
+      description: Get a list of accounts with id, account type, and balance.
+      method: GET
+- name: ai-mcp-proxy
+  route: transactions
+  tags:
+  - accounts-mcp
+  config:
+    mode: conversion-only
+    # Transactionサービスは finance 部署のみアクセス可能
+    tools:
+    - acl:
+        allow:
+        - finance
+      annotations:
+        title: Create a transaction
+      description: Create a new credit transaction for a given Account ID.
+      method: POST
+      path: /transactions/{accountId}
+      parameters:
+      - name: accountId
+        in: path
+        description: Account ID for the transactions.
+        schema:
+          type: string
+        required: [accountId]
+      request_body:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount:
+                  description: The amount to be credited.
+                  type: integer
+                  format: int64
+                description:
+                  description: Description of this credit transaction.
+                  type: string
+                transaction_type:
+                  description: Type of the transaction. It could be either credit or debit.
+                  type: string
+                  enum:
+                  - credit
+                  - debit
+              required: [amount, description, transaction_type]
+    - acl:
+        allow:
+        - finance
+      annotations:
+        title: List all transactions
+      description: Get a list of transaction with id, date, amount, description, and transaction type for a given account.
+      method: GET
+      path: /transactions/{accountId}
+      parameters:
+      - name: accountId
+        in: path
+        description: Account ID for the transactions.
+        schema:
+          type: string
+        required: [accountId]

@@ -6,6 +6,14 @@ Kong Gatewayの3.12で登場したMCP Proxy及びAI MCP OAuth2プラグインの
 > [!IMPORTANT] 
 > Kong Enterpriseのライセンスが必要です。
 
+## 事前準備
+利用するサンプル環境によっては、Docker Composeでゲートウェイを立ち上げる前に外部サービス側の準備が必要です。
+
+- [OpenWeather](/weather.md)を試す場合: OpenWeatherMapのAPIキーの発行が必要（詳細は[weather.mdの事前準備](/weather.md#事前準備---openweatherのapiキーの取得)を参照）。
+- [MCP ACL with OIDC](/mcp-acl-with-oidc.md)を試す場合: Auth0の無料テナント作成、およびTerraform実行用M2Mアプリケーションの発行が必要（詳細は[mcp-acl-with-oidc.mdの事前準備](/mcp-acl-with-oidc.md#事前準備---auth0テナント作成)を参照）。
+
+[Transactions](/transactions.md)のみを試す場合は追加の事前準備は不要です。
+
 ## ゲートウェイの立ち上げ
 1. Kong Gateway Enterpriseライセンスを`.env`に設定。
 2. 以下のコマンドを実行
@@ -17,6 +25,7 @@ docker compose up -d
 ## サンプル環境
 1. [OpenWeather](/weather.md) - ```conversion-listener```モードで既存のREST APIに対してMCPサーバを用意。
 2. [Transactions](/transactions.md) - ```listener```と```conversion-only```モードを組み合わせる事により、異なる2つのサービスへのアクセスを集約したMCPサーバを構築。
+3. [MCP ACL with OIDC](/mcp-acl-with-oidc.md) - OIDC（Auth0）で認証したユーザーのdepartment属性を元に、```ai-mcp-proxy```のネイティブACL機能でMCP Toolへのアクセスを制御。
 
 ## アクセス (insomnia)
 バックエンドとなるOpenWeather、Account、Transactionの各種サービスに接続する際に利用できる[Insomnia Collection](/collections/kong-mcp-testbed-collection.yaml)を用意。InsomniaからImportすることが可能。
